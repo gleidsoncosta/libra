@@ -1,0 +1,8 @@
+MLP  2 2 1 
+Epoches;1313;Iterações;5252
+entrada1;entrada2;saida desejada;resultado numerico;resultado aproximado0
+0;0;0;0.0656222;0
+0;1;1;0.940685;1
+1;0;1;0.940395;1
+1;1;0;0.0625984;0
+;;;;100
