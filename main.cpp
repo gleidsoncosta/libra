@@ -1,11 +1,16 @@
 #include <iostream>
 #include "include/Network.h"
 #include "include/bateriasteste.h"
-#include "include/TrainingData.h"
 #include "include/Data.h"
 #include <iomanip>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 using namespace std;
+using namespace cv;
 
 Network defineNetwork(vector<double> network_layers, vector<vector<double> > data, vector<double> bateria){
 
@@ -50,8 +55,7 @@ void testNetwork(Network net, vector<vector<double> > data){
 
 }
 
-int main()
-{
+void Neural(){
     Data data;
     Baterias baterias;
 
@@ -71,4 +75,26 @@ int main()
         Network net = defineNetwork(network_layers, data.trainingdata, baterias.testes[i]);
         testNetwork(net, data.alldata);
     }
+}
+
+void ImageProcessing(){
+    string filepath = "/home/gleidson/Imagens/2.png";
+
+    Mat original;
+    original =  imread(filepath, CV_LOAD_IMAGE_COLOR);;
+    if( original.data == NULL){
+        cout <<  "Could not open or find the image" << endl ;
+        return;
+    }
+    //apresentacao das imgs
+    imshow( "Original",original);                   // Show our image inside it.
+
+    waitKey(0);
+    return;                                          // Wait for a keystroke in the window
+}
+
+int main()
+{
+    //Neural();
+    ImageProcessing();
 }
