@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1495658958 source:/home/gleidson/Documentos/NeuralNetwork/mlp/main.cpp
+1496777899 source:/home/gleidson/Documentos/NeuralNetwork/mlp/main.cpp
 	<iostream>
 	"include/Network.h"
 	"include/bateriasteste.h"
@@ -9,6 +9,9 @@
 	<opencv2/imgcodecs.hpp>
 	<opencv2/highgui/highgui.hpp>
 	<opencv2/imgproc/imgproc.hpp>
+	<opencv2/opencv.hpp>
+	<dirent.h>
+	<math.h>
 
 1494767467 /home/gleidson/Documentos/NeuralNetwork/mlp/include/Network.h
 	"Layer.h"
