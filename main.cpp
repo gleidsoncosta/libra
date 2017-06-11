@@ -120,6 +120,7 @@ vector<float> hogDesc(string path){
 
     Mat original;
     original =  imread(path.c_str(), CV_LOAD_IMAGE_COLOR);;
+    
     if( original.data == NULL){
         cout <<  "Could not open or find the image" << endl ;
         return caract;
@@ -136,7 +137,7 @@ vector<float> hogDesc(string path){
 }
 
 void ImageProcessing(){
-    string folderpath = "/home/gleidson/Documentos/NeuralNetwork/mlp/Dataset/Fold1/";
+    string folderpath = "./Dataset/Fold1/";
     vector<vector<float> > imgs_features;
     vector<string> imgs_labels;
     //para cada pasta
@@ -159,8 +160,15 @@ void ImageProcessing(){
         }
     }
 
-    cout << imgs_features.size() << endl;
-    cout << imgs_labels.size() << endl;
+    for(int i = 0; i < imgs_features.size(); i++){
+    	for(int j = 0; j < imgs_features.size(); j++){
+    		cout << imgs_features[i][j] << ";";
+    	}
+    	cout << imgs_labels[i] << endl;
+    }
+
+    //cout << imgs_features.size() << endl;
+    //cout << imgs_labels.size() << endl;
 
 }
 
