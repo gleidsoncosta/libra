@@ -13,6 +13,8 @@
 #include <dirent.h>
 #include <math.h>
 
+#include <sstream>
+
 using namespace std;
 using namespace cv;
 
@@ -118,12 +120,11 @@ vector<string> getDirContent(string folder){
 vector<float> hogDesc(Mat original){
     vector<float> caract;
 
-    HOGDescriptor hog( Size(64,64), Size(16,16), Size(8,8), Size(8,8), 9);
-
     resize(original,original,Size(64,64));
+                        //w                         //s         //c
+    HOGDescriptor hog( Size(64,64), Size(16,16), Size(16,16), Size(16,16), 9);
 
     hog.compute( original, caract);
-
     waitKey(5);
     return caract;
 }
@@ -228,39 +229,163 @@ vector<float> shapeDesc(Mat original){
     return caract;
 }
 
+int partOfGroup(string val, vector<int> groupsidx = vector<int>(0)){
+    vector< vector<string> > groups(12);
+
+    groups[0] = vector<string>(4);
+    groups[0][0] = "A";groups[0][1] = "E";groups[0][2] = "S";groups[0][3] = "I";
+
+    groups[1] = vector<string>(5);
+    groups[1][0] = "U";groups[1][1] = "V";groups[1][2] = "R";groups[1][3] = "W";groups[1][4] = "4";
+
+    groups[2] = vector<string>(3);
+    groups[2][0] = "M";groups[2][1] = "N";groups[2][2] = "Q";
+
+    groups[3] = vector<string>(2);
+    groups[3][0] = "Adulto";groups[3][1] = "B";
+
+    groups[4] = vector<string>(3);
+    groups[4][0] = "C";groups[4][1] = "Pequeno";groups[4][2] = "O";
+
+    groups[5] = vector<string>(2);
+    groups[5][0] = "F";groups[5][1] = "T";
+
+    groups[6] = vector<string>(4);
+    groups[6][0] = "X";groups[6][1] = "5";groups[6][2] = "7";groups[6][3] = "P";
+
+    groups[7] = vector<string>(5);
+    groups[7][0] = "L";groups[7][1] = "G";groups[7][2] = "Palavra";groups[7][3] = "Y";groups[7][4] = "Aviao";
+
+    groups[8] = vector<string>(2);
+    groups[8][0] = "1";groups[8][1] = "2";
+
+    groups[9] = vector<string>(6);
+    groups[9][0] = "Verbo";groups[9][1] = "Pedra";groups[9][2] = "Junto";groups[9][3] = "Gasolina";groups[9][4] = "America";groups[9][5] = "Casa";
+
+    groups[10] = vector<string>(2);
+    groups[10][0] = "Lei";groups[10][1] = "Identidade";
+
+    groups[11] = vector<string>(2);
+    groups[11][0] = "D";groups[11][1] = "9";
+
+    if(groupsidx.empty()){
+        for(int i=0; i<groups.size(); i++){
+            for(int j=0; j<groups[i].size(); j++){
+                if(val == groups[i][j])
+                    return i;
+            }
+        }
+    }else{
+        for(int i=0; i<groupsidx.size(); i++){
+            for(int j=0; j<groups[groupsidx[i]].size(); j++){
+                if(val == groups[groupsidx[i]][j])
+                    return groupsidx[i];
+            }
+        }
+    }
+    return -1;
+}
+
+string num2Str(int num){
+    switch (num){
+        case 0:
+            return "ZERO";
+        case 1:
+            return "UM";
+        case 2:
+            return "DOIS";
+        case 3:
+            return "TRES";
+        case 4:
+            return "QUATRO";
+        case 5:
+            return "CINCO";
+        case 6:
+            return "SEIS";
+        case 7:
+            return "SETE";
+        case 8:
+            return "OITO";
+        case 9:
+            return "NOVE";
+        case 10:
+            return "DEZ";
+        case 11:
+            return "ONZE";
+        case 12:
+            return "DOZE";
+        default:
+            return "menos um";
+
+    }
+}
+
 void ImageProcessing(){
-    string folderpath = "/home/gleidson/Documentos/NeuralNetwork/libra/Dataset/Fold1/";
+    string folderpath = "/home/gleidson/Documentos/NeuralNetwork/libra/Dataset/";
     vector<vector<float> > imgs_features;
     vector<vector<float> > shape_features;
+    vector<string> groupsnames;
     vector<string> imgs_labels;
+    vector<string> colnames;
+    bool start = true;
+
     //para cada pasta
         //para cada imagem
             //obtem-se as características
                 //se foi possível obter-las, salva as caracteríticas e o rótulo (nome da pasta com as imagens)
     vector<string> folders = getDirContent(folderpath);
-    for(int i=0; i<folders.size(); i++){
-        string filepath = folderpath+folders[i]+"/";
-        vector<string> files = getDirContent(filepath);
-        for(int j=0; j<files.size(); j++){
-            if (strstr(files[j].c_str(),"c")){
-                string fullfilepath = filepath+files[j];
-                Mat original = imread(fullfilepath.c_str(), CV_LOAD_IMAGE_COLOR);
-                if( original.data != NULL){
-                    //UTILIZAR HISTOGRAMA DE GRADIENTES
-                    vector<float> histrow = hogDesc(original);
-                    imgs_features.push_back(histrow);
+    for(int l=0; l<folders.size(); l++){
+        vector<string> folders2 = getDirContent(folderpath+folders[l]+"/");
+        for(int i=0; i<folders2.size(); i++){
+            vector<int> groupsidx;
+            groupsidx.push_back(0);
+            groupsidx.push_back(3);
+            int groupOfSign = partOfGroup(folders2[i]);
+            if(groupOfSign == -1)   continue;
+            string filepath = folderpath+folders[l]+"/"+folders2[i]+"/";
+            vector<string> files = getDirContent(filepath);
+            for(int j=0; j<files.size(); j++){
+                if (!strstr(files[j].c_str(),"c")){
+                    string fullfilepath = filepath+files[j];
+                    string fullfilepathseg = filepath+"c"+files[j];
+                    Mat original = imread(fullfilepath.c_str(), CV_LOAD_IMAGE_COLOR);
+                    Mat segmentada = imread(fullfilepathseg.c_str(), CV_LOAD_IMAGE_COLOR);
+                    if( original.data != NULL && segmentada.data != NULL ){
+                        //UTILIZAR HISTOGRAMA DE GRADIENTES
+                        vector<float> histrow = hogDesc(original);
+                        imgs_features.push_back(histrow);
 
-                    //UTILIZAR DESCRITORES DE FORMA
-                    vector<float> shaperow = shapeDesc(original);
-                    shape_features.push_back(shaperow);
+                        //UTILIZAR DESCRITORES DE FORMA
+                        vector<float> shaperow = shapeDesc(segmentada);
+                        shape_features.push_back(shaperow);
 
-                    //RÓTULO
-                    imgs_labels.push_back(folders[i]);
+                        if(start){
+                            for(int k=0; k<histrow.size(); k++){
+                                ostringstream tostr;
+                                tostr << k;
+                                colnames.push_back("hog"+tostr.str());
+                            }
+                            for(int k=0; k<shaperow.size(); k++){
+                                ostringstream tostr;
+                                tostr << k;
+                                colnames.push_back("shp"+tostr.str());
+                            }
+                            colnames.push_back("groups");
+                            colnames.push_back("label");
+                            start = false;
+                        }
+
+                        //GRUPO
+                        groupsnames.push_back(num2Str(groupOfSign));
+
+                        //RÓTULO
+                        imgs_labels.push_back(folders2[i]);
+
+                    }
                 }
             }
         }
     }
-
     //APENAS SHAPE E ROTULO
     /*for(int i = 0; i < shape_features.size(); i++){
     	for(int j = 0; j < shape_features[i].size(); j++){
@@ -278,16 +403,24 @@ void ImageProcessing(){
     }*/
 
     //USAR DIAMBA AS PARTES :D
+    for(int i = 0; i < colnames.size()-1; i++){
+        cout << colnames[i] << ",";
+    }
+    cout << colnames[colnames.size()-1] << endl;
+
     for(int i = 0; i < imgs_labels.size(); i++){
-    	for(int j = 0; j < imgs_features[i].size(); j++){
-    		cout << imgs_features[i][j] << ";";
+
+        for(int j = 0; j < imgs_features[i].size(); j++){
+    		cout << imgs_features[i][j] << ",";
     	}
 
-    	for(int j = 0; j < shape_features[i].size(); j++){
-    		cout << shape_features[i][j] << ";";
+        for(int j = 0; j < shape_features[i].size(); j++){
+    		cout << shape_features[i][j] << ",";
     	}
+        cout << groupsnames[i] << ",";
+        cout << imgs_labels[i] << endl;
 
-    	cout << imgs_labels[i] << endl;
+
     }
 }
 
