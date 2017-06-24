@@ -2,6 +2,7 @@
 #include "include/Network.h"
 #include "include/bateriasteste.h"
 #include "include/Data.h"
+#include "include/operations.h"
 #include <iomanip>
 
 #include <opencv2/core/core.hpp>
@@ -20,6 +21,9 @@ using namespace cv;
 
 
 RNG rng(12345);
+
+Mat removeYColor(Mat frame);
+
 
 Network defineNetwork(vector<double> network_layers, vector<vector<double> > data, vector<double> bateria){
 
@@ -120,12 +124,12 @@ vector<string> getDirContent(string folder){
 vector<float> hogDesc(Mat original){
     vector<float> caract;
 
-    resize(original,original,Size(64,64));
+    resize(original,original,Size(32,32));
                         //w                         //s         //c
-    HOGDescriptor hog( Size(64,64), Size(16,16), Size(16,16), Size(16,16), 9);
+    HOGDescriptor hog( Size(32,32), Size(16,16), Size(16,16), Size(16,16), 9);
 
     hog.compute( original, caract);
-    waitKey(5);
+    //waitKey(5);
     return caract;
 }
 
@@ -138,8 +142,10 @@ vector<float> shapeDesc(Mat original){
 
     vector<float> caract;
     Mat gray;
-    cvtColor( original, gray, CV_BGR2GRAY );
-
+    //if (original.type = CV_8UC3)
+    //    cvtColor( original, gray, CV_BGR2GRAY );
+    //else
+        gray = original;
     //mesmo as binarias, não estao binarias certinho. Tem uns ruidos louco. Ai
     //esse loop é so pra forçar a binarizacao
 
@@ -149,6 +155,8 @@ vector<float> shapeDesc(Mat original){
             else gray.at<uchar>(i,j) = 0;
         }
      }
+
+
 
     vector<vector<Point> > contours;
     //funcao que encontra os contornos
@@ -320,6 +328,23 @@ string num2Str(int num){
     }
 }
 
+vector<float> getDescriptorFeatures(Mat segmentada, Mat original = Mat(0,0,0)){
+    vector<float> alldesc;
+
+    //UTILIZAR HISTOGRAMA DE GRADIENTES
+    if(original.rows ==0 && original.cols == 0)
+        alldesc = hogDesc(segmentada);
+    else
+        alldesc = hogDesc(original);
+
+    //UTILIZAR DESCRITORES DE FORMA
+    vector<float> shaperow = shapeDesc(segmentada);
+
+    alldesc.insert(alldesc.end(), shaperow.begin(), shaperow.end());
+
+    return alldesc;
+}
+
 void ImageProcessing(){
     string folderpath = "/home/gleidson/Documentos/NeuralNetwork/libra/Dataset/";
     vector<vector<float> > imgs_features;
@@ -427,5 +452,71 @@ void ImageProcessing(){
 int main()
 {
     //Neural();
-    ImageProcessing();
+    //ImageProcessing();
+
+
+    Mat background, hand;
+    Mat frame_bin, yuv, yuv_bin, frameyuv, frame_er, frame_dil;
+
+    VideoCapture cap(0); // open the default camera
+    if(!cap.isOpened())  // check if we succeeded
+        return -1;
+
+    cap >> hand;
+    hand.copyTo(background);
+
+    for(;;){
+
+        cap >> hand;
+
+        frame_bin = Operacoes::diferencaImg(background, hand, 20);
+        //set background subtraction skin colored
+        yuv = removeYColor(hand);
+        yuv_bin = Operacoes::binImageYUV(yuv);
+
+        frameyuv = Operacoes::logicFilter(frame_bin, yuv_bin);
+
+        int dilation_size = 1;
+        Mat element = getStructuringElement( MORPH_RECT,
+                                           Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                           Point( dilation_size, dilation_size ) );
+        erode( frameyuv, frame_er, element );
+        dilation_size = 7;
+        element = getStructuringElement( MORPH_RECT,
+                                           Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                           Point( dilation_size, dilation_size ) );
+        dilate( frame_er, frame_dil, element );
+
+        Mat sec_framedil = frame_dil.clone();
+
+        vector<float> alldesc = getDescriptorFeatures(sec_framedil);
+
+        for(int i=0; i<alldesc.size(); i++){
+            cout << alldesc[i] << ",";
+        }
+        cout << endl;
+
+        imshow("hand", hand);
+        imshow("dislat", frame_dil);
+        if(waitKey(30) >= 0) break;
+    }
+}
+
+Mat removeYColor(Mat frame){
+    Mat yuv, g, fin_img;
+
+    cvtColor(frame, yuv, COLOR_BGR2YUV);
+    g = Mat::zeros(Size(frame.cols, frame.rows),0);
+
+    vector<Mat> yuv_planes(3);
+    split(yuv, yuv_planes);
+
+    vector<Mat> channels;
+    channels.push_back(g);
+    channels.push_back(yuv_planes[1]);
+    channels.push_back(yuv_planes[2]);
+
+    merge(channels, fin_img);
+
+    return fin_img;
 }
