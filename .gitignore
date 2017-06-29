@@ -11,7 +11,10 @@ RemoteSystemsTempFiles/
 ClassificadorLibras/data/saida_groups_predict.arff
 ClassificadorLibras/data/saida_labels_predict.arff
 ClassificadorLibras/data/saida_resultados.dat
-*.csv
+ClassificadorLibras/dist/*.csv
+ClassificadorLibras/dist/*.arff
+teste.csv
+teste
 *.cbp
 *.depend
 *.layout
