@@ -1,13 +1,16 @@
 bin/
 obj/
 .metadata/
-.recomenders/
+.recommenders/
 ClassificadorLibras/bin/
 ClassificadorLibras/.settings/
 ClassificadorLibras/testes/
 ClassificadorLibras/.classpath
 ClassificadorLibras/.project
 RemoteSystemsTempFiles/
+ClassificadorLibras/data/saida_groups_predict.arff
+ClassificadorLibras/data/saida_labels_predict.arff
+ClassificadorLibras/data/saida_resultados.dat
 *.csv
 *.cbp
 *.depend

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.DenseInstance;
@@ -133,27 +134,13 @@ public class Main {
 			return;
 		}
 		
-		DataSource sourceTest; // para grupos
-		Instances dataTest; // para grupos
+		DataSource sourceTest = null; // para grupos
+		Instances dataTest = null; // para grupos
 		
-		DataSource sourceTestLabel; // para labels
-		Instances dataTestLabel; // para labels
+		DataSource sourceTestLabel = null; // para labels
+		Instances dataTestLabel = null; // para labels
 		
-		// abrindo arquivo de dataset para teste
-		sourceTest = new DataSource(strFile);
-		sourceTestLabel = new DataSource(strFile);
-		
-		// deletando atributo nao util
-		dataTest = sourceTest.getDataSet();
-		dataTestLabel = sourceTestLabel.getDataSet();
-		
-		// retirando label e setando classe grupo
-		dataTest.deleteAttributeAt(dataTest.numAttributes() - 1);
-		dataTest.setClassIndex(dataTest.numAttributes() - 1);
-		
-		// retirando grupo e setando classe label
-		dataTestLabel.deleteAttributeAt(dataTestLabel.numAttributes() - 2);
-		dataTestLabel.setClassIndex(dataTestLabel.numAttributes() - 1);
+		openAndGetDataset(sourceTest, sourceTestLabel, dataTest, dataTestLabel, strFile);
 		
 		// hashmap para estatisticas
 		Map<String, Integer> mapGroups = new HashMap<>();
@@ -194,121 +181,146 @@ public class Main {
 		
 		System.out.println("Iniciando predicao...");
 		
-		// roda indefinidamente
-		while(true){
+		char continuaExecucao = 's';
+		while(continuaExecucao == 's'){
 			
-			// se for modo consumidor entao testa se arquivo de tempo real existe
-			if(modoConsumidor){
-				if(!fileDataset.exists()){
-					System.out.println("Esperando pelo arquivo...");
-					Thread.sleep(1000);
-					continue;
-				}else{
-					// resgistra tempo de modificacao
-					if(tempoAnterior == 0){
-						tempoAnterior = fileDataset.lastModified();
+			// roda indefinidamente
+			while(true){
+				
+				// se for modo consumidor entao testa se arquivo de tempo real existe
+				if(modoConsumidor){
+					if(!fileDataset.exists()){
+						System.out.println("Esperando pelo arquivo...");
+						Thread.sleep(1000);
+						continue;
 					}else{
-						if(tempoAnterior == fileDataset.lastModified()){
-							System.out.println("Nenhuma entrada nova no arquivo...");
-							Thread.sleep(10000);
-							continue;
-						}else{
+						// resgistra tempo de modificacao
+						if(tempoAnterior == 0){
 							tempoAnterior = fileDataset.lastModified();
+						}else{
+							if(tempoAnterior == fileDataset.lastModified()){
+								System.out.println("Nenhuma entrada nova no arquivo...");
+								Thread.sleep(10000);
+								continue;
+							}else{
+								tempoAnterior = fileDataset.lastModified();
+							}
 						}
 					}
-				}
-			}else{
-				if(!fileDataset.exists()){
-					System.out.println("Arquivo de testes nao existe! Criar arquivo: " + fileDataset.getName());
-					continue;
-				}
-			}
-			
-			// adiciona a dataTest e a dataTestLabel instancia lida do arquivo de testes
-			if(modoConsumidor){
-				Instance c = instanceFromFile(fileDataset, 0, null);
-				dataTest.add(c);
-				dataTestLabel.add(c);
-			}
-			
-			// se for modo consumidor, pega a ultima - se nao, pega na posicao count
-			if(modoConsumidor){
-				if(dataTest.numInstances() >= 1){
-					atualGrupo = dataTest.lastInstance();
 				}else{
-					System.out.println("Nenhuma instancia inserida. Aguardando...");
-					Thread.sleep(10000);
-					continue;
+					if(!fileDataset.exists()){
+						System.out.println("Arquivo de testes nao existe! Criar arquivo: " + fileDataset.getName());
+						continue;
+					}
 				}
-			}else{
-				// se tiver pelo menos uma instancia ele faz o teste - para grupo
-				if(dataTest.numInstances() >=1){
-					atualGrupo = dataTest.instance(count);
+				
+				// adiciona a dataTest e a dataTestLabel instancia lida do arquivo de testes
+				if(modoConsumidor){
+					Instance c = instanceFromFile(fileDataset, 0, null);
+					dataTest.add(c);
+					dataTestLabel.add(c);
+				}
+				
+				// se for modo consumidor, pega a ultima - se nao, pega na posicao count
+				if(modoConsumidor){
+					if(dataTest.numInstances() >= 1){
+						atualGrupo = dataTest.lastInstance();
+					}else{
+						System.out.println("Nenhuma instancia inserida. Aguardando...");
+						Thread.sleep(10000);
+						continue;
+					}
 				}else{
-					System.out.println("Arquivo de instancias para predict vazio. Encerrando...");
+					// se tiver pelo menos uma instancia ele faz o teste - para grupo
+					if(dataTest.numInstances() >=1){
+						atualGrupo = dataTest.instance(count);
+					}else{
+						System.out.println("Arquivo de instancias para predict vazio. Encerrando...");
+						return;
+					}
+					
+				}
+				
+				// efetua o predict para a instancia 'atual' utilizando a MLP dos grupos
+				predict(mlpGrupos, atualGrupo, -1);
+					
+				// escreve no arquivo saida_grupos_predict a instancia que acabou de ser predita com sua classe
+				writer.write(atualGrupo.toString());
+			 	writer.newLine();
+				writer.flush();
+				
+				if(modoConsumidor){
+					atualLabel = dataTestLabel.lastInstance();
+				}else{
+					atualLabel = dataTestLabel.instance(count);
+				}
+				
+				// sempre adiciona a inst (saida_groups_predict) e sempre pega a ultima predita
+				inst.add(instanceFromFile(new File("data/saida_groups_predict.arff"), 1, inst));
+				instAtual = inst.lastInstance();
+				
+				// transforma o label de instAtual.stringValue(inst.classIndex()) em um valor inteiro de 0 a 11
+				int strInt = strToInt(instAtual.stringValue(inst.classIndex()));
+				
+				if(strInt < 0){
+					System.out.println("Erro na funcao strInt. Valor retornado: " + strInt);
+					System.out.println("Encerrando...");
 					return;
 				}
 				
-			}
-			
-			// efetua o predict para a instancia 'atual' utilizando a MLP dos grupos
-			predict(mlpGrupos, atualGrupo, -1);
+				// de acordo com o grupo retornado, chama a MLP label correspondente e passa a instancia current e seu grupo
+				// strInt varia de 0 a 11 e representa o grupo (linhas da variavel global matrixLabels
+				predict(mlpLabel.get(strInt), atualLabel, strInt);
 				
-			// escreve no arquivo saida_grupos_predict a instancia que acabou de ser predita com sua classe
-			writer.write(atualGrupo.toString());
-		 	writer.newLine();
-			writer.flush();
+				if(modoConsumidor){
+					System.out.println("Grupo: " + instAtual.stringValue(inst.classIndex()) + "    Gesto: " + atualLabel.stringValue(atualLabel.classIndex()));
+				}else{
+					buffLabel.write(atualLabel.toString());
+					buffLabel.newLine();
+					buffLabel.flush();
+				}
+				
+				// insere nas hashmaps para estatisticas o grupo e label que foram preditos pelas MLPs
+				insertOnHashMap(mapGroups, mapLabels, instAtual, atualLabel);
+				
+				// se esta no modo consumidor, entao devera incrementar count
+				if(!modoConsumidor){
+					if(count < (dataTest.numInstances() - 1))
+						count++;
+					else
+						break;
+				}
+			}
 			
-			if(modoConsumidor){
-				atualLabel = dataTestLabel.lastInstance();
+			System.out.println("Salvando estatisticas...");
+			
+			// gerando as estatisticas
+			printEstatistics(mapGroups, mapLabels);
+			
+			String moreFile = "";
+			moreFile = hasMoreFile();
+			
+			if(moreFile.equals("")){
+				continuaExecucao = 'n';
 			}else{
-				atualLabel = dataTestLabel.instance(count);
-			}
-			
-			// sempre adiciona a inst (saida_groups_predict) e sempre pega a ultima predita
-			inst.add(instanceFromFile(new File("data/saida_groups_predict.arff"), 1, inst));
-			instAtual = inst.lastInstance();
-			
-			// transforma o label de instAtual.stringValue(inst.classIndex()) em um valor inteiro de 0 a 11
-			int strInt = strToInt(instAtual.stringValue(inst.classIndex()));
-			
-			if(strInt < 0){
-				System.out.println("Erro na funcao strInt. Valor retornado: " + strInt);
-				System.out.println("Encerrando...");
-				return;
-			}
-			
-			// de acordo com o grupo retornado, chama a MLP label correspondente e passa a instancia current e seu grupo
-			// strInt varia de 0 a 11 e representa o grupo (linhas da variavel global matrixLabels
-			predict(mlpLabel.get(strInt), atualLabel, strInt);
-			
-			if(modoConsumidor){
-				System.out.println("Grupo: " + instAtual.stringValue(inst.classIndex()) + "    Gesto: " + atualLabel.stringValue(atualLabel.classIndex()));
-			}else{
-				buffLabel.write(atualLabel.toString());
-				buffLabel.newLine();
-				buffLabel.flush();
-			}
-			
-			// insere nas hashmaps para estatisticas o grupo e label que foram preditos pelas MLPs
-			insertOnHashMap(mapGroups, mapLabels, instAtual, atualLabel);
-			
-			// se esta no modo consumidor, entao devera incrementar count
-			if(!modoConsumidor){
-				if(count < (dataTest.numInstances() - 1))
-					count++;
-				else
-					break;
+				dataTest.delete();
+				dataTestLabel.delete();
+				
+				sourceTest.reset();
+				sourceTestLabel.reset();
+				
+				inst.delete();
+				inst = ds.getDataSet();
+				inst.setClassIndex(inst.numAttributes() - 1);
+				
+				count = 0;
+				
+				openAndGetDataset(sourceTest, sourceTestLabel, dataTest, dataTestLabel, moreFile);
 			}
 		}
 		
 		if(!modoConsumidor)
 			buffLabel.close();
-		
-		System.out.println("Salvando estatisticas...");
-		
-		// gerando as estatisticas
-		printEstatistics(mapGroups, mapLabels);
 		
 		writer.close();
 		
@@ -466,5 +478,52 @@ public class Main {
     	inst.setMissing(inst.numAttributes() - 1);
 	
 		return inst;
+	}
+	
+	private static void openAndGetDataset(DataSource sourceTest, DataSource sourceTestLabel, Instances dataTest, Instances dataTestLabel, String strFile) throws Exception{
+		// abrindo arquivo de dataset para teste
+		sourceTest = new DataSource(strFile);
+		sourceTestLabel = new DataSource(strFile);
+		
+		// deletando atributo nao util
+		dataTest = sourceTest.getDataSet();
+		dataTestLabel = sourceTestLabel.getDataSet();
+		
+		// retirando label e setando classe grupo
+		dataTest.deleteAttributeAt(dataTest.numAttributes() - 1);
+		dataTest.setClassIndex(dataTest.numAttributes() - 1);
+		
+		// retirando grupo e setando classe label
+		dataTestLabel.deleteAttributeAt(dataTestLabel.numAttributes() - 2);
+		dataTestLabel.setClassIndex(dataTestLabel.numAttributes() - 1);
+	}
+	
+	private static String hasMoreFile(){
+		Scanner scan = new Scanner(System.in);
+		String str;
+		while(true){
+			System.out.println("Deseja processar mais algum arquivo? <s|n>");
+			str = scan.next();
+			if(str.equals("s") || str.equals("n")){
+				if(str.equals("s")){
+					System.out.println("Entre com o nome do arquivo: ");
+					str = scan.next();
+					if(new File(str).exists()){
+						scan.close();
+						return str;
+					}
+				}else{
+					if(str.equals("n")){
+						scan.close();
+						return "";
+					}
+				}
+				scan.close();
+				return "";
+			}else{
+				System.out.println("Entrada invalida! Use <s|n> para continuar ou nao.");
+				continue;
+			}
+		}
 	}
 }
