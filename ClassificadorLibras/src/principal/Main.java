@@ -91,6 +91,11 @@ public class Main {
 		if(fileTest.exists()){
 			fileTest.delete();
 		}
+		
+		fileTest = new File("data/saida_groups_predict.arff");
+		if(fileTest.exists()){
+			fileTest.delete();
+		}
 		/*  -----------------------------------------------------------------------------   */
 		
 		// se for modoConsumidor, entao vai consumir de um arquivo em tempo real
@@ -140,7 +145,21 @@ public class Main {
 		DataSource sourceTestLabel = null; // para labels
 		Instances dataTestLabel = null; // para labels
 		
-		openAndGetDataset(sourceTest, sourceTestLabel, dataTest, dataTestLabel, strFile);
+		// abrindo arquivo de dataset para teste
+		sourceTest = new DataSource(strFile);
+		sourceTestLabel = new DataSource(strFile);
+		
+		// deletando atributo nao util
+		dataTest = sourceTest.getDataSet();
+		dataTestLabel = sourceTestLabel.getDataSet();
+		
+		// retirando label e setando classe grupo
+		dataTest.deleteAttributeAt(dataTest.numAttributes() - 1);
+		dataTest.setClassIndex(dataTest.numAttributes() - 1);
+		
+		// retirando grupo e setando classe label
+		dataTestLabel.deleteAttributeAt(dataTestLabel.numAttributes() - 2);
+		dataTestLabel.setClassIndex(dataTestLabel.numAttributes() - 1);
 		
 		// hashmap para estatisticas
 		Map<String, Integer> mapGroups = new HashMap<>();
@@ -163,10 +182,8 @@ public class Main {
 		 	dataTest = sourceTest.getDataSet();
 			dataTest.deleteAttributeAt(dataTest.numAttributes() - 1);
 			dataTest.setClassIndex(dataTest.numAttributes() - 1);
+			
 		}
-		
-		// abrindo para modo de escrita 'append'
-		writer = new BufferedWriter(new FileWriter("data/saida_groups_predict.arff", true));
 		
 		// pegando instancias com os grupos preditos
 		DataSource ds = new DataSource("data/saida_groups_predict.arff");
@@ -175,11 +192,16 @@ public class Main {
 		// classe grupos esta na ultima posicao
 		inst.setClassIndex(inst.numAttributes() - 1);
 		
+		// abrindo para modo de escrita 'append'
+		writer = new BufferedWriter(new FileWriter("data/saida_groups_predict.arff", true));
+		
 		Instance atualGrupo = null; // ultima instancia do arquivo de testes com classe grupo
 		Instance atualLabel = null; // ultima instancia do arquivo de testes com classe label
 		Instance instAtual = null; // ultima instancia do arquivo saida_groups_predict
 		
 		System.out.println("Iniciando predicao...");
+		
+		Scanner scan = new Scanner(System.in);
 		
 		char continuaExecucao = 's';
 		while(continuaExecucao == 's'){
@@ -191,7 +213,7 @@ public class Main {
 				if(modoConsumidor){
 					if(!fileDataset.exists()){
 						System.out.println("Esperando pelo arquivo...");
-						Thread.sleep(1000);
+						Thread.sleep(100);
 						continue;
 					}else{
 						// resgistra tempo de modificacao
@@ -200,7 +222,7 @@ public class Main {
 						}else{
 							if(tempoAnterior == fileDataset.lastModified()){
 								System.out.println("Nenhuma entrada nova no arquivo...");
-								Thread.sleep(10000);
+								Thread.sleep(100);
 								continue;
 							}else{
 								tempoAnterior = fileDataset.lastModified();
@@ -296,26 +318,43 @@ public class Main {
 			
 			// gerando as estatisticas
 			printEstatistics(mapGroups, mapLabels);
+
+			strFile = hasMoreFile(scan);
 			
-			String moreFile = "";
-			moreFile = hasMoreFile();
-			
-			if(moreFile.equals("")){
+			if(strFile.equals("")){
 				continuaExecucao = 'n';
 			}else{
+				// limpa as variaveis para processar o proximo arquivo e efetuar os predicts
+				
 				dataTest.delete();
 				dataTestLabel.delete();
 				
 				sourceTest.reset();
 				sourceTestLabel.reset();
 				
+				// resetando dataset de saida_groups_predict
 				inst.delete();
-				inst = ds.getDataSet();
-				inst.setClassIndex(inst.numAttributes() - 1);
 				
 				count = 0;
 				
-				openAndGetDataset(sourceTest, sourceTestLabel, dataTest, dataTestLabel, moreFile);
+				mapGroups.clear();
+				mapLabels.clear();
+				
+				// abrindo arquivo de dataset para teste
+				sourceTest = new DataSource(strFile);
+				sourceTestLabel = new DataSource(strFile);
+				
+				// deletando atributo nao util
+				dataTest = sourceTest.getDataSet();
+				dataTestLabel = sourceTestLabel.getDataSet();
+				
+				// retirando label e setando classe grupo
+				dataTest.deleteAttributeAt(dataTest.numAttributes() - 1);
+				dataTest.setClassIndex(dataTest.numAttributes() - 1);
+				
+				// retirando grupo e setando classe label
+				dataTestLabel.deleteAttributeAt(dataTestLabel.numAttributes() - 2);
+				dataTestLabel.setClassIndex(dataTestLabel.numAttributes() - 1);
 			}
 		}
 		
@@ -335,6 +374,8 @@ public class Main {
 		writer.close();
 		
 		System.out.println("Concluido!");
+		
+		scan.close();
 		
 		source.reset();
 		sourceTest.reset();
@@ -360,7 +401,7 @@ public class Main {
 		buff.newLine();
 		buff.flush();
 		for(String key : mapGroups.keySet()){
-			buff.write(key + ": ");
+			buff.write("\t" + key + ": ");
 			buff.write(mapGroups.get(key).toString());
 			buff.newLine();
 			buff.flush();
@@ -370,13 +411,13 @@ public class Main {
 		buff.newLine();
 		buff.flush();
 		for(String key : mapLabels.keySet()){
-			buff.write(key + ": ");
+			buff.write("\t" + key + ": ");
 			buff.write(mapLabels.get(key).toString());
 			buff.newLine();
 			buff.flush();
 		}
 		
-		buff.write("  ---------------------------------------------- ");
+		buff.write("----------------------------------------------");
 		buff.newLine();
 		buff.flush();
 		buff.close();
@@ -480,26 +521,7 @@ public class Main {
 		return inst;
 	}
 	
-	private static void openAndGetDataset(DataSource sourceTest, DataSource sourceTestLabel, Instances dataTest, Instances dataTestLabel, String strFile) throws Exception{
-		// abrindo arquivo de dataset para teste
-		sourceTest = new DataSource(strFile);
-		sourceTestLabel = new DataSource(strFile);
-		
-		// deletando atributo nao util
-		dataTest = sourceTest.getDataSet();
-		dataTestLabel = sourceTestLabel.getDataSet();
-		
-		// retirando label e setando classe grupo
-		dataTest.deleteAttributeAt(dataTest.numAttributes() - 1);
-		dataTest.setClassIndex(dataTest.numAttributes() - 1);
-		
-		// retirando grupo e setando classe label
-		dataTestLabel.deleteAttributeAt(dataTestLabel.numAttributes() - 2);
-		dataTestLabel.setClassIndex(dataTestLabel.numAttributes() - 1);
-	}
-	
-	private static String hasMoreFile(){
-		Scanner scan = new Scanner(System.in);
+	private static String hasMoreFile(Scanner scan){
 		String str;
 		while(true){
 			System.out.println("Deseja processar mais algum arquivo? <s|n>");
@@ -509,16 +531,13 @@ public class Main {
 					System.out.println("Entre com o nome do arquivo: ");
 					str = scan.next();
 					if(new File(str).exists()){
-						scan.close();
 						return str;
 					}
 				}else{
 					if(str.equals("n")){
-						scan.close();
 						return "";
 					}
 				}
-				scan.close();
 				return "";
 			}else{
 				System.out.println("Entrada invalida! Use <s|n> para continuar ou nao.");
