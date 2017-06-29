@@ -267,16 +267,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 			
 			if(instAtual.stringValue(inst.classIndex()).equals("UM")){
@@ -291,16 +282,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 				
 			}
 			
@@ -316,16 +298,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 			
 			if(instAtual.stringValue(inst.classIndex()).equals("TRES")){
@@ -340,16 +313,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 
 			if(instAtual.stringValue(inst.classIndex()).equals("QUATRO")){
@@ -364,16 +328,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 						
 			if(instAtual.stringValue(inst.classIndex()).equals("CINCO")){
@@ -388,16 +343,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 			
 			if(instAtual.stringValue(inst.classIndex()).equals("SEIS")){
@@ -412,16 +358,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 
 			if(instAtual.stringValue(inst.classIndex()).equals("SETE")){
@@ -436,16 +373,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 			
 			if(instAtual.stringValue(inst.classIndex()).equals("OITO")){
@@ -460,16 +388,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 			
 			if(instAtual.stringValue(inst.classIndex()).equals("NOVE")){
@@ -484,16 +403,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}				
 			
 			if(instAtual.stringValue(inst.classIndex()).equals("DEZ")){
@@ -508,16 +418,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 			
 			if(instAtual.stringValue(inst.classIndex()).equals("ONZE")){
@@ -532,16 +433,7 @@ public class Main {
 					buffLabel.flush();
 				}
 				
-				if(mapGroups.containsKey(instAtual.stringValue(inst.classIndex()))){
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), mapGroups.get(instAtual.stringValue(inst.classIndex())) + 1);
-				}else{
-					mapGroups.put(instAtual.stringValue(inst.classIndex()), 1);
-				}
-				if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
-					mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
-				}else{
-					mapLabels.put(current.stringValue(current.classIndex()), 1);
-				}
+				insertOnHashMap(mapGroups, mapLabels, instAtual, current);
 			}
 			
 			if(!modoConsumidor){
@@ -591,7 +483,7 @@ public class Main {
 	}
 	
 	private static void printEstatistics(Map<String, Integer> mapGroups, Map<String, Integer> mapLabels) throws Exception{
-		BufferedWriter buff = new BufferedWriter(new FileWriter("saida_resultados.dat", true));
+		BufferedWriter buff = new BufferedWriter(new FileWriter("data/saida_resultados.dat", true));
 		
 		buff.write("GRUPOS");
 		buff.newLine();
@@ -617,6 +509,19 @@ public class Main {
 		buff.newLine();
 		buff.flush();
 		buff.close();
+	}
+	
+	private static void insertOnHashMap(Map <String, Integer> mapGroups, Map<String, Integer> mapLabels, Instance instAtual, Instance current){
+		if(mapGroups.containsKey(instAtual.stringValue(instAtual.classIndex()))){
+			mapGroups.put(instAtual.stringValue(instAtual.classIndex()), mapGroups.get(instAtual.stringValue(instAtual.classIndex())) + 1);
+		}else{
+			mapGroups.put(instAtual.stringValue(instAtual.classIndex()), 1);
+		}
+		if(mapLabels.containsKey(current.stringValue(current.classIndex()))){
+			mapLabels.put(current.stringValue(current.classIndex()), mapLabels.get(current.stringValue(current.classIndex())) + 1);
+		}else{
+			mapLabels.put(current.stringValue(current.classIndex()), 1);
+		}
 	}
 	
 }
