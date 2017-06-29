@@ -1,5 +1,12 @@
 bin/
 obj/
+.metadata/
+ClassificadorLibras/bin/
+ClassificadorLibras/.settings/
+ClassificadorLibras/testes/
+ClassificadorLibras/.classpath
+ClassificadorLibras/.project
+RemoteSystemsTempFiles/
 *.csv
 *.cbp
 *.depend

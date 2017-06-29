@@ -520,5 +520,3 @@ Mat removeYColor(Mat frame){
 
     return fin_img;
 }
-
-//testando sa porra de kdiff
