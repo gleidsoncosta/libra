@@ -225,6 +225,7 @@ public class Main {
 								Thread.sleep(100);
 								continue;
 							}else{
+								count++;
 								tempoAnterior = fileDataset.lastModified();
 							}
 						}
@@ -236,11 +237,18 @@ public class Main {
 					}
 				}
 				
+				// pequeno arranjo tecnico
+				if(count == 0){
+					continue;
+				}
+				
 				// adiciona a dataTest e a dataTestLabel instancia lida do arquivo de testes
 				if(modoConsumidor){
 					Instance c = instanceFromFile(fileDataset, 0, null);
 					dataTest.add(c);
 					dataTestLabel.add(c);
+				}else{
+					continue;
 				}
 				
 				// se for modo consumidor, pega a ultima - se nao, pega na posicao count
