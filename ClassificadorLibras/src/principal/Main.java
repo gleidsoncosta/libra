@@ -224,9 +224,12 @@ public class Main {
 				}
 			}
 			
-			// adiciona a dataTest instancia lida do arquivo de testes
-			if(modoConsumidor)
-				dataTest.add(instanceFromFile(fileDataset, 1));
+			// adiciona a dataTest e a dataTestLabel instancia lida do arquivo de testes
+			if(modoConsumidor){
+				Instance c = instanceFromFile(fileDataset, 0, null);
+				dataTest.add(c);
+				dataTestLabel.add(c);
+			}
 			
 			// se for modo consumidor, pega a ultima - se nao, pega na posicao count
 			if(modoConsumidor){
@@ -256,28 +259,24 @@ public class Main {
 		 	writer.newLine();
 			writer.flush();
 			
-			// adicionar ultima linha do arquivo a dataTestLabel transformando a linha em objeto Instance
-			if(modoConsumidor)
-				dataTestLabel.add(instanceFromFile(fileDataset, 2));
-			
 			if(modoConsumidor){
 				atualLabel = dataTestLabel.lastInstance();
 			}else{
 				atualLabel = dataTestLabel.instance(count);
 			}
 			
-			// adiciona a inst a instancia lida de saida_groups_predict
-			if(modoConsumidor)
-				inst.add(instanceFromFile(new File("data/saida_groups_predict.arff"), 3));
-			
-			if(modoConsumidor){
-				instAtual = inst.lastInstance();
-			}else{
-				instAtual = inst.instance(count);
-			}
+			// sempre adiciona a inst (saida_groups_predict) e sempre pega a ultima predita
+			inst.add(instanceFromFile(new File("data/saida_groups_predict.arff"), 1, inst));
+			instAtual = inst.lastInstance();
 			
 			// transforma o label de instAtual.stringValue(inst.classIndex()) em um valor inteiro de 0 a 11
 			int strInt = strToInt(instAtual.stringValue(inst.classIndex()));
+			
+			if(strInt < 0){
+				System.out.println("Erro na funcao strInt. Valor retornado: " + strInt);
+				System.out.println("Encerrando...");
+				return;
+			}
 			
 			// de acordo com o grupo retornado, chama a MLP label correspondente e passa a instancia current e seu grupo
 			// strInt varia de 0 a 11 e representa o grupo (linhas da variavel global matrixLabels
@@ -301,8 +300,6 @@ public class Main {
 				else
 					break;
 			}
-			
-			dataTest.clear();
 		}
 		
 		if(!modoConsumidor)
@@ -330,6 +327,7 @@ public class Main {
 		source.reset();
 		sourceTest.reset();
 		dataTest.clear();
+		dataTestLabel.clear();
 	}
 	
 	private static void predict(MultilayerPerceptron mlp, Instance inst, int i) throws Exception{
@@ -431,7 +429,7 @@ public class Main {
 
 	}
 	
-	private static Instance instanceFromFile(File file, int type) throws IOException{
+	private static Instance instanceFromFile(File file, int type, Instances dataset) throws IOException{
 		
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		
@@ -440,7 +438,6 @@ public class Main {
 		
 	    while ((sCurrentLine = br.readLine()) != null) 
 	    {
-	        System.out.println(sCurrentLine);
 	        lastLine = sCurrentLine;
 	    }
 	    
@@ -450,11 +447,12 @@ public class Main {
 	    
 	    Instance inst = new DenseInstance(values.length);
 	    
-	    if(type == 3){
+	    if(type == 1){
 	    	for(int i = 0; i < values.length - 1; i++){
 		    	inst.setValue(i, Double.parseDouble(values[i]));
 		    }
-	    	inst.setValue(values.length - 1, values[values.length - 1]);
+	    	inst.setDataset(dataset);
+	    	inst.setValue((values.length - 1), String.valueOf(values[values.length - 1]));
 	    	
 	    	return inst;
 	    }
@@ -464,16 +462,9 @@ public class Main {
 	    		inst.setValue(i, Double.parseDouble(values[i]));
 	    }
 	    
-	    if(type == 1){
-	    	inst.deleteAttributeAt(inst.numAttributes() - 1);
-	    	inst.setMissing(inst.numAttributes() - 1);
-	    }else{
-	    	if(type == 2){
-		    	inst.deleteAttributeAt(inst.numAttributes() - 2);
-		    	inst.setMissing(inst.numAttributes() - 1);
-	    	}
-	    }
-		
+    	inst.deleteAttributeAt(inst.numAttributes() - 1);
+    	inst.setMissing(inst.numAttributes() - 1);
+	
 		return inst;
 	}
 }

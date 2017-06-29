@@ -1,6 +1,7 @@
 bin/
 obj/
 .metadata/
+.recomenders/
 ClassificadorLibras/bin/
 ClassificadorLibras/.settings/
 ClassificadorLibras/testes/
