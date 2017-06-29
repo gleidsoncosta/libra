@@ -15,6 +15,9 @@
 #include <math.h>
 
 #include <sstream>
+#include <fstream>
+#include <unistd.h>
+
 
 using namespace std;
 using namespace cv;
@@ -126,7 +129,7 @@ vector<float> hogDesc(Mat original){
 
     resize(original,original,Size(32,32));
                         //w                         //s         //c
-    HOGDescriptor hog( Size(32,32), Size(16,16), Size(16,16), Size(16,16), 9);
+    HOGDescriptor hog( Size(32,32), Size(16,16), Size(16,16), Size(8,8), 9);
 
     hog.compute( original, caract);
     //waitKey(5);
@@ -139,7 +142,7 @@ vector<float> shapeDesc(Mat original){
        deu suporte na criação do algoritmo:
        https://stackoverflow.com/questions/18401438/find-point-of-convexity-defects-in-opencv-c-function**/
 
-
+    resize(original,original,Size(64,64));
     vector<float> caract;
     Mat gray;
     //if (original.type = CV_8UC3)
@@ -166,7 +169,7 @@ vector<float> shapeDesc(Mat original){
     // -> convDef para os indexes de defeito
     // hullpts e defectpts sao os pontos registrados nos indexes
     vector<vector<int> >hull( contours.size() );
-    vector<vector<Vec4i> > convDef(contours.size() );
+    vector<Vec4i> convDef(contours.size() );
     vector<vector<Point> > hullpts(contours.size());
     vector<vector<Point> > defectpts(contours.size());
 
@@ -174,21 +177,23 @@ vector<float> shapeDesc(Mat original){
     int numdefpts = 0;
 
 
-    for(size_t i = 0; i < contours.size(); i++)
+    for(int i = 0; i < contours.size(); i++)
     {
-        size_t count = contours[i].size();
+        int a = contours[i].size();
         //somente um limiar, para caso o numero de pontos de um contorno encontrado
         //não seja possvel criar uma mao. saca?
-        if( count < 10 )
+        //cout << count << endl;
+        if( a < 10)
             continue;
 
         //encontra os indices de pontos de extremo
         convexHull( contours[i], hull[i], false );
         numhullpts = hull.size();
         //encontra os indices de pontos de convexidade
-        convexityDefects(contours[i], hull[i], convDef[i]);
-        for(int k=0;k<convDef[i].size();k++){
-            if(convDef[i][k][3]>500){
+        convexityDefects(contours[i], hull[i], convDef);
+
+        for(int k=0;k<convDef.size();k++){
+            if(convDef[k][3]>500){
                 numdefpts ++;
             }
         }
@@ -328,14 +333,48 @@ string num2Str(int num){
     }
 }
 
+vector<float> hudesc(Mat img, bool bin){
+    vector<float> resp;
+
+
+    Mat gray;
+    //if (original.type = CV_8UC3)
+    //    cvtColor( original, gray, CV_BGR2GRAY );
+    //else
+    gray = img;
+    //mesmo as binarias, não estao binarias certinho. Tem uns ruidos louco. Ai
+    //esse loop é so pra forçar a binarizacao
+
+    for(int i=0; i<gray.rows; i++){
+        for(int j=0; j<gray.cols; j++){
+            if(gray.at<uchar>(i,j) >= 128)  gray.at<uchar>(i,j) = 255;
+            else gray.at<uchar>(i,j) = 0;
+        }
+     }
+
+    Moments mom = moments(gray, bin);
+    double arr[7];
+    HuMoments(mom, arr);
+    for(int i=0; i<7; i++){
+        resp.push_back(arr[i]);
+    }
+    return resp;
+}
+
 vector<float> getDescriptorFeatures(Mat segmentada, Mat original = Mat(0,0,0)){
     vector<float> alldesc;
 
     //UTILIZAR HISTOGRAMA DE GRADIENTES
-    if(original.rows ==0 && original.cols == 0)
+    /**if(original.rows ==0 && original.cols == 0)
         alldesc = hogDesc(segmentada);
     else
         alldesc = hogDesc(original);
+    **/
+
+    //UTILIZAR HU MOMENT
+    //Mat gray;
+    //cvtColor(original, gray, CV_BGR2GRAY);
+    alldesc = hudesc(segmentada, true);
 
     //UTILIZAR DESCRITORES DE FORMA
     vector<float> shaperow = shapeDesc(segmentada);
@@ -374,21 +413,26 @@ void ImageProcessing(){
                     string fullfilepath = filepath+files[j];
                     string fullfilepathseg = filepath+"c"+files[j];
                     Mat original = imread(fullfilepath.c_str(), CV_LOAD_IMAGE_COLOR);
-                    Mat segmentada = imread(fullfilepathseg.c_str(), CV_LOAD_IMAGE_COLOR);
+                    Mat segmentada = imread(fullfilepathseg.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
                     if( original.data != NULL && segmentada.data != NULL ){
                         //UTILIZAR HISTOGRAMA DE GRADIENTES
-                        vector<float> histrow = hogDesc(original);
-                        imgs_features.push_back(histrow);
+                        //vector<float> histrow = hogDesc(original);
+                        //imgs_features.push_back(histrow);
+
+                        //UTILIZAR HU MOMENT
+                        vector<float> hurow = hudesc(segmentada, true);
+                        imgs_features.push_back(hurow);
+
 
                         //UTILIZAR DESCRITORES DE FORMA
                         vector<float> shaperow = shapeDesc(segmentada);
                         shape_features.push_back(shaperow);
 
                         if(start){
-                            for(int k=0; k<histrow.size(); k++){
+                            for(int k=0; k<hurow.size(); k++){
                                 ostringstream tostr;
                                 tostr << k;
-                                colnames.push_back("hog"+tostr.str());
+                                colnames.push_back("hu"+tostr.str());
                             }
                             for(int k=0; k<shaperow.size(); k++){
                                 ostringstream tostr;
@@ -449,18 +493,16 @@ void ImageProcessing(){
     }
 }
 
-int main()
-{
-    //Neural();
-    //ImageProcessing();
+void videoUsage(){
 
+    ofstream csvfile ("saidaTestesConsumidorTeste.arff", ios_base::app);
 
     Mat background, hand;
     Mat frame_bin, yuv, yuv_bin, frameyuv, frame_er, frame_dil;
 
     VideoCapture cap(0); // open the default camera
     if(!cap.isOpened())  // check if we succeeded
-        return -1;
+        return;
 
     cap >> hand;
     hand.copyTo(background);
@@ -489,17 +531,27 @@ int main()
 
         Mat sec_framedil = frame_dil.clone();
 
-        vector<float> alldesc = getDescriptorFeatures(sec_framedil);
+        vector<float> alldesc = getDescriptorFeatures(sec_framedil, hand);
 
         for(int i=0; i<alldesc.size(); i++){
-            cout << alldesc[i] << ",";
+            csvfile << alldesc[i] << ",";
         }
-        cout << endl;
+        csvfile << "?,?";
+        csvfile << endl;
 
         imshow("hand", hand);
         imshow("dislat", frame_dil);
+        usleep(10);
         if(waitKey(30) >= 0) break;
     }
+}
+
+
+int main()
+{
+    //Neural();
+    //ImageProcessing();
+    videoUsage();
 }
 
 Mat removeYColor(Mat frame){
@@ -520,3 +572,4 @@ Mat removeYColor(Mat frame){
 
     return fin_img;
 }
+
