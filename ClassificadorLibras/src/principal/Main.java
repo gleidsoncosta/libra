@@ -39,7 +39,7 @@ public class Main {
 	public static void main(String[] args) throws Exception{
 		
 		// abrindo arquivo de dataset
-		DataSource source = new DataSource("data/out321608_final.csv");
+		DataSource source = new DataSource("data/out_hu.csv");
 		
 		// setando classe e excluindo atributos nao uteis
 		Instances data = source.getDataSet();
@@ -62,7 +62,7 @@ public class Main {
 		
 		// abrindo datasets dos grupos
 		for(int i = 0; i < 12; i++){
-			DataSource ds = new DataSource("data/grupo_" + i + ".csv");
+			DataSource ds = new DataSource("data/grupo_" + i + "_hu.csv");
 			
 			Instances inst = ds.getDataSet();
 			

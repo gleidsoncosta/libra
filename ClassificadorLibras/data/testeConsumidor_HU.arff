@@ -1,0 +1,16 @@
+@relation testeZeroA
+
+@attribute hu0 numeric
+@attribute hu1 numeric
+@attribute hu2 numeric
+@attribute hu3 numeric
+@attribute hu4 numeric
+@attribute hu5 numeric
+@attribute hu6 numeric
+@attribute shp0 numeric
+@attribute shp1 numeric
+@attribute groups {ZERO,SETE,TRES,QUATRO,NOVE,SEIS,OITO,DEZ,UM,CINCO,DOIS,ONZE}
+@attribute label {I,Aviao,Adulto,O,Casa,P,Pedra,E,DOIS,Verbo,Identidade,L,W,QUATRO,Junto,Y,U,UM,C,T,N,V,Lei,S,D,A,B,Gasolina,Palavra,Pequeno,G,SETE,F,X,CINCO,America,NOVE,Q,M,R}
+
+
+@data
