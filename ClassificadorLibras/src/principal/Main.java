@@ -238,7 +238,7 @@ public class Main {
 				}
 				
 				// pequeno arranjo tecnico
-				if(count == 0){
+				if(count == 0 && modoConsumidor){
 					continue;
 				}
 				
@@ -247,8 +247,6 @@ public class Main {
 					Instance c = instanceFromFile(fileDataset, 0, null);
 					dataTest.add(c);
 					dataTestLabel.add(c);
-				}else{
-					continue;
 				}
 				
 				// se for modo consumidor, pega a ultima - se nao, pega na posicao count
@@ -540,6 +538,9 @@ public class Main {
 					str = scan.next();
 					if(new File(str).exists()){
 						return str;
+					}else{
+						System.out.println("Arquivo nao existe! Entre com um arquivo valido ou <n> para encerrar!");
+						continue;
 					}
 				}else{
 					if(str.equals("n")){
