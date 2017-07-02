@@ -495,7 +495,7 @@ void ImageProcessing(){
 
 void videoUsage(){
 
-    ofstream csvfile ("saidaTestesConsumidorTeste.arff", ios_base::app);
+    ofstream csvfile ("ClassificadorLibras/data/testeConsumidor_HU.arff", ios_base::app);
 
     Mat background, hand;
     Mat frame_bin, yuv, yuv_bin, frameyuv, frame_er, frame_dil;
